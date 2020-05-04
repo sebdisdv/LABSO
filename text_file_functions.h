@@ -132,8 +132,6 @@ char** create_subfiles_names(const char* src_filename, int number_of_part){
 /// \param number_of_part : number of subfiles necessary
 /// \return
 char** create_subfiles(const char* or_filename, const char* or_file_path, const char* save_path, int number_of_part){
-    //chdir(save_path);
-    //printf("%d", *number_of_part - '0');
     printf("Malloc started\n");
     printf("number of part to create %d\n", number_of_part);
     char* cd_command = (char *) malloc(sizeof(char) * 100);
@@ -146,13 +144,15 @@ char** create_subfiles(const char* or_filename, const char* or_file_path, const 
         list_filedivision[i] = (char *) malloc(sizeof(char) * 4);
     }
 
+
+    printf("Malloc completed successfully\n");
+
+    //creating the split -n file.txt command
     strcpy(cd_command, "cd ");
-
-    printf("Malloc completed\n");
-
     char* cwd = getcwd(NULL, 0);
     strcpy(buffer2, cwd);
     strcat(cd_command, buffer2);
+    printf("\'%s\' command created successfully!");
 
     char* space = " ";
 
@@ -160,23 +160,25 @@ char** create_subfiles(const char* or_filename, const char* or_file_path, const 
     char* n = (char*) malloc(sizeof(char));
     *n = number_of_part + '0';
 
+
     strcat(buffer2, n);
     strcat(buffer2, space);
     strcat(buffer2, or_filename);
+    printf("\'split -n %d %s\' command created successfully!\n");
 
-
-
-
-
+    //executing the commands
     system(cd_command);
     system(buffer2);
 
-    printf("Subfiles of file %s created\n", or_filename);
+    printf("Subfiles of file %s created successfully!\n", or_filename);
 
+    //creating the future names for the subfiles
     char** new_subfiles_names = create_subfiles_names(or_filename, number_of_part);
+
+    //crating a file .txt containg the names of the subfiles
     system("ls x* > temp_list.txt");
 
-
+    //opening the file .txt with the names of the subfiles and saving them in a matrix
     FILE* copyfile;
     copyfile = fopen("temp_list.txt", "r");
     if (copyfile == NULL){
@@ -184,14 +186,11 @@ char** create_subfiles(const char* or_filename, const char* or_file_path, const 
         exit(1);
     }
 
-
     char c;
     c = getc(copyfile);
     int current_index_x = 0;
     int current_index_y = 0;
     while(c != EOF){
-       // printf("x = %d, y = %d, c = %c\n", current_index_x, current_index_y, c);
-
         if (c == '\n'){
             list_filedivision[current_index_x][current_index_y] = '\0';
             current_index_x++;
@@ -204,14 +203,13 @@ char** create_subfiles(const char* or_filename, const char* or_file_path, const 
     }
     fclose(copyfile);
 
-    printf("List_file_division created\n");
+    printf("List_file_division created successfully!\n");
 
+    //we create move the subfiles in the save_path, renaming them along the way
     strcpy(mv_command, save_path);
-    printf("%s\n", mv_command);
     for (i = 0; i < number_of_part; i++){
         strcat(mv_command, space);
         strcat(mv_command, new_subfiles_names[i]);
-        printf("%s\n", mv_command);
         rename(list_filedivision[i], mv_command);
         strcpy(mv_command, save_path);
     }
@@ -222,11 +220,11 @@ char** create_subfiles(const char* or_filename, const char* or_file_path, const 
         free(list_filedivision[i]);
         printf("%d freed !\n", i);
     }
-
     free(list_filedivision);
     free(buffer2);
     free(cwd);
     free(cd_command);
+    printf("All memory freed successfuly !");
 
     return new_subfiles_names;
 }
